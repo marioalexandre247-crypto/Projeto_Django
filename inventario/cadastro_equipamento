@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <h2>➕ Cadastrar Novo Equipamento</h2>
+    
+    <form method="post" action=""> 
+        {% csrf_token %} {{ form.as_p }} 
+
+        <button type="submit">Salvar Equipamento</button>
+    </form>
+
+    <a href="{% url 'lista_equipamentos' %}">Cancelar</a>
+
+{% endblock %}

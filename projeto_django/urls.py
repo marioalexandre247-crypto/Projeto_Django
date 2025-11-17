@@ -19,4 +19,7 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Conecta as URLs do seu app 'equipamentos'
+    path('equipamentos/', include('equipamentos.urls')),
 ]

@@ -1,0 +1,20 @@
+{% extends "base.html" %} {% block content %}
+
+    <h2>📋 Lista de Equipamentos</h2>
+    <a href="{% url 'cadastro_equipamento' %}">Adicionar Novo Equipamento</a>
+
+    {% if equipamentos %}
+        <ul>
+            {% for equipamento in equipamentos %}
+                <li>
+                    <a href="{% url 'detalhe_equipamento' pk=equipamento.pk %}">
+                        {{ equipamento.nome }}
+                    </a> - Status: {{ equipamento.status }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum equipamento cadastrado ainda.</p>
+    {% endif %}
+
+{% endblock %}
