@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir {{ equipamento.nome }} - Sistema de Inventário{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-card {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .warning-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        animation: pulse 2s infinite;
+    }
+
+    .warning-icon i {
+        font-size: 3rem;
+        color: white;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 20px rgba(231, 76, 60, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+        }
+    }
+
+    .delete-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .delete-message {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .equipment-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 30px 0;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .equipment-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .equipment-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label-delete {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .info-value-delete {
+        color: #7f8c8d;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .button-group .btn {
+        flex: 1;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .button-group .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-delete-confirm {
+        background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-delete-confirm:hover {
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        color: white;
+    }
+
+    .btn-cancel-delete {
+        background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+        border: none;
+        color: white;
+    }
+
+    .warning-text {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #856404;
+        font-weight: 500;
+    }
+
+    .warning-text i {
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-card">
+    <!-- Ícone de Aviso -->
+    <div class="warning-icon">
+        <i class="bi bi-exclamation-triangle"></i>
+    </div>
+
+    <!-- Título -->
+    <h1 class="delete-title">Confirmar Exclusão</h1>
+
+    <!-- Mensagem -->
+    <p class="delete-message">
+        Você está prestes a excluir permanentemente este equipamento. Esta ação não pode ser desfeita.
+    </p>
+
+    <!-- Aviso -->
+    <div class="warning-text">
+        <i class="bi bi-info-circle-fill"></i>
+        Todos os dados deste equipamento serão perdidos permanentemente.
+    </div>
+
+    <!-- Informações do Equipamento -->
+    <div class="equipment-info">
+        <div class="equipment-info-item">
+            <span class="info-label-delete">
+                <i class="bi bi-laptop"></i> Nome:
+            </span>
+            <span class="info-value-delete">{{ equipamento.nome }}</span>
+        </div>
+        <div class="equipment-info-item">
+            <span class="info-label-delete">
+                <i class="bi bi-upc-scan"></i> Serial:
+            </span>
+            <span class="info-value-delete">{{ equipamento.serial }}</span>
+        </div>
+        <div class="equipment-info-item">
+            <span class="info-label-delete">
+                <i class="bi bi-tag"></i> Categoria:
+            </span>
+            <span class="info-value-delete">{{ equipamento.categoria.nome }}</span>
+        </div>
+        <div class="equipment-info-item">
+            <span class="info-label-delete">
+                <i class="bi bi-calendar-check"></i> Data:
+            </span>
+            <span class="info-value-delete">{{ equipamento.data|date:"d/m/Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="button-group">
+            <a href="{% url 'lista_equipamentos' %}" class="btn btn-cancel-delete">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-delete-confirm">
+                <i class="bi bi-trash"></i> Sim, Excluir Equipamento
+            </button>
+        </div>
+    </form>
+
+    <!-- Link Alternativo -->
+    <div class="mt-4">
+        <a href="{% url 'detalhe_equipamento' equipamento.id %}" class="text-muted">
+            <i class="bi bi-arrow-left"></i> Ver detalhes do equipamento
+        </a>
+    </div>
+</div>
+{% endblock %}

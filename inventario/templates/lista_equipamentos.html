@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Equipamentos - Sistema de Inventário{% endblock %}
+
+{% block extra_css %}
+<style>
+    .equipment-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .equipment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+    }
+
+    .status-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-em-uso {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .status-estoque {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .status-manutencao {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .stats-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    .filter-pills .btn {
+        margin: 5px;
+        border-radius: 20px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: #bdc3c7;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-header mb-0">
+            <i class="bi bi-box-seam"></i> Equipamentos
+        </h1>
+        <a href="{% url 'adicionar_equipamento' %}" class="btn btn-custom-primary">
+            <i class="bi bi-plus-circle"></i> Novo Equipamento
+        </a>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_equipamentos }}</div>
+                <div class="stats-label">Total</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                <div class="stats-number">{{ em_uso }}</div>
+                <div class="stats-label">Em Uso</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                <div class="stats-number">{{ estoque }}</div>
+                <div class="stats-label">Estoque</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <div class="stats-number">{{ manutencao }}</div>
+                <div class="stats-label">Manutenção</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Busca e Filtros -->
+    <div class="search-box">
+        <form method="GET" action="">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <input type="text" name="busca" class="form-control" placeholder="Buscar por nome ou serial..." value="{{ request.GET.busca }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas as categorias</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:"s" %}selected{% endif %}>
+                                {{ categoria.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <button type="submit" class="btn btn-custom-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Filtros Rápidos -->
+        <div class="filter-pills text-center">
+            <a href="?status=EM_USO" class="btn btn-sm btn-outline-success">Em Uso</a>
+            <a href="?status=ESTOQUE" class="btn btn-sm btn-outline-primary">Estoque</a>
+            <a href="?status=MANUTENCAO" class="btn btn-sm btn-outline-danger">Manutenção</a>
+            <a href="{% url 'lista_equipamentos' %}" class="btn btn-sm btn-outline-secondary">Limpar Filtros</a>
+        </div>
+    </div>
+
+    <!-- Lista de Equipamentos -->
+    {% if equipamentos %}
+    <div class="row">
+        {% for equipamento in equipamentos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card equipment-card">
+                <div class="card-header-custom">
+                    <i class="bi bi-pc-display"></i> {{ equipamento.categoria.nome }}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ equipamento.nome }}</h5>
+                    <p class="card-text text-muted mb-2">
+                        <i class="bi bi-upc-scan"></i> <strong>Serial:</strong> {{ equipamento.serial }}
+                    </p>
+                    <p class="card-text text-muted mb-3">
+                        <i class="bi bi-calendar-check"></i> <strong>Data:</strong> {{ equipamento.data|date:"d/m/Y" }}
+                    </p>
+                    
+                    <div class="mb-3">
+                        {% if equipamento.status == 'EM_USO' %}
+                            <span class="status-badge status-em-uso">
+                                <i class="bi bi-check-circle"></i> Em Uso
+                            </span>
+                        {% elif equipamento.status == 'ESTOQUE' %}
+                            <span class="status-badge status-estoque">
+                                <i class="bi bi-box"></i> Estoque
+                            </span>
+                        {% elif equipamento.status == 'MANUTENCAO' %}
+                            <span class="status-badge status-manutencao">
+                                <i class="bi bi-tools"></i> Manutenção
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'editar_equipamento' equipamento.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a href="{% url 'excluir_equipamento' equipamento.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir?')">
+                            <i class="bi bi-trash"></i> Excluir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if is_paginated %}
+    <nav aria-label="Navegação de página">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">Primeira</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Estado Vazio -->
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3 class="text-muted">Nenhum equipamento encontrado</h3>
+        <p class="text-muted">Comece adicionando seu primeiro equipamento ao inventário.</p>
+        <a href="{% url 'adicionar_equipamento' %}" class="btn btn-custom-primary mt-3">
+            <i class="bi bi-plus-circle"></i> Adicionar Equipamento
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

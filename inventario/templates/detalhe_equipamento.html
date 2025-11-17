@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ equipamento.nome }} - Sistema de Inventário{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .equipment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+
+    .equipment-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .equipment-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .info-section {
+        margin-bottom: 30px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 1.2rem;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .status-display {
+        display: inline-block;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .action-buttons .btn {
+        flex: 1;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: transform 0.2s ease;
+    }
+
+    .action-buttons .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .related-section {
+        margin-top: 50px;
+        padding-top: 30px;
+        border-top: 3px solid #ecf0f1;
+    }
+
+    .related-card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #3498db, transparent);
+        margin: 30px 0;
+    }
+
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-card">
+    <!-- Header do Equipamento -->
+    <div class="equipment-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <div class="equipment-title">
+                    <i class="bi bi-laptop"></i> {{ equipamento.nome }}
+                </div>
+                <div class="equipment-subtitle">
+                    <i class="bi bi-tag"></i> {{ equipamento.categoria.nome }}
+                </div>
+            </div>
+            <div>
+                {% if equipamento.status == 'EM_USO' %}
+                    <span class="status-display" style="background-color: #27ae60;">
+                        <i class="bi bi-check-circle"></i> Em Uso
+                    </span>
+                {% elif equipamento.status == 'ESTOQUE' %}
+                    <span class="status-display" style="background-color: #3498db;">
+                        <i class="bi bi-box"></i> Estoque
+                    </span>
+                {% elif equipamento.status == 'MANUTENCAO' %}
+                    <span class="status-display" style="background-color: #e74c3c;">
+                        <i class="bi bi-tools"></i> Manutenção
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Detalhadas -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="info-section">
+                <div class="icon-box">
+                    <i class="bi bi-upc-scan"></i>
+                </div>
+                <div class="info-label">Número de Série</div>
+                <div class="info-value">{{ equipamento.serial }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="info-section">
+                <div class="icon-box">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="info-label">Data de Aquisição</div>
+                <div class="info-value">{{ equipamento.data|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Informações Adicionais -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="bi bi-tag-fill"></i> Categoria
+                </div>
+                <div class="info-value">{{ equipamento.categoria.nome }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="info-section">
+                <div class="info-label">
+                    <i class="bi bi-info-circle-fill"></i> ID do Equipamento
+                </div>
+                <div class="info-value">#{{ equipamento.id }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="action-buttons">
+        <a href="{% url 'editar_equipamento' equipamento.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil-square"></i> Editar Equipamento
+        </a>
+        <a href="{% url 'excluir_equipamento' equipamento.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este equipamento?')">
+            <i class="bi bi-trash"></i> Excluir Equipamento
+        </a>
+        <a href="{% url 'lista_equipamentos' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar à Lista
+        </a>
+    </div>
+
+    <!-- Equipamentos Relacionados -->
+    {% if equipamentos_relacionados %}
+    <div class="related-section">
+        <h3 class="mb-4">
+            <i class="bi bi-grid"></i> Equipamentos Relacionados
+        </h3>
+        <div class="row">
+            {% for eq in equipamentos_relacionados %}
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card related-card">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ eq.nome }}</h6>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="bi bi-upc-scan"></i> {{ eq.serial }}
+                        </p>
+                        <a href="{% url 'detalhe_equipamento' eq.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
