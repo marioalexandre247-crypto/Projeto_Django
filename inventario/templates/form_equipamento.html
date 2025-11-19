@@ -1,256 +1,284 @@
 {% extends 'base.html' %}
 
-{% block title %}Lista de Equipamentos - Sistema de Inventário{% endblock %}
+{% block title %}{{ titulo }} - Sistema de Inventário{% endblock %}
 
 {% block extra_css %}
 <style>
-    .equipment-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        height: 100%;
-    }
-
-    .equipment-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .card-header-custom {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px;
-        font-weight: bold;
-    }
-
-    .status-badge {
-        padding: 8px 15px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .status-em-uso {
-        background-color: #27ae60;
-        color: white;
-    }
-
-    .status-estoque {
-        background-color: #3498db;
-        color: white;
-    }
-
-    .status-manutencao {
-        background-color: #e74c3c;
-        color: white;
-    }
-
-    .search-box {
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
         background: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    .stats-card {
+    .form-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        padding: 25px;
         border-radius: 15px;
-        padding: 20px;
+        margin-bottom: 30px;
         text-align: center;
-        margin-bottom: 20px;
     }
 
-    .stats-number {
-        font-size: 2.5rem;
+    .form-header i {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+
+    .form-header h1 {
+        font-size: 1.8rem;
         font-weight: bold;
+        margin: 0;
     }
 
-    .stats-label {
-        font-size: 1rem;
-        opacity: 0.9;
+    .form-group {
+        margin-bottom: 25px;
     }
 
-    .filter-pills .btn {
-        margin: 5px;
-        border-radius: 20px;
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
+    .form-control, .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .empty-state i {
-        font-size: 5rem;
-        color: #bdc3c7;
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+
+    .form-text {
+        color: #7f8c8d;
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .error-message {
+        background: #ffe6e6;
+        border-left: 4px solid #e74c3c;
+        padding: 12px 15px;
+        border-radius: 8px;
         margin-bottom: 20px;
+        color: #c0392b;
+    }
+
+    .error-message ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .status-options {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .status-option {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .status-option input[type="radio"] {
+        display: none;
+    }
+
+    .status-option label {
+        display: block;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .status-option input[type="radio"]:checked + label {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .status-option label:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .button-group .btn {
+        flex: 1;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .button-group .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-submit:hover {
+        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+        border: none;
+        color: white;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #e74c3c;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="content-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="page-header mb-0">
-            <i class="bi bi-box-seam"></i> Equipamentos
-        </h1>
-        <a href="{% url 'adicionar_equipamento' %}" class="btn btn-custom-primary">
-            <i class="bi bi-plus-circle"></i> Novo Equipamento
-        </a>
+<div class="form-card">
+    <!-- Header do Formulário -->
+    <div class="form-header">
+        <i class="bi bi-{{ icone }}"></i>
+        <h1>{{ titulo }}</h1>
     </div>
 
-    <!-- Estatísticas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stats-card">
-                <div class="stats-number">{{ total_equipamentos }}</div>
-                <div class="stats-label">Total</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
-                <div class="stats-number">{{ em_uso }}</div>
-                <div class="stats-label">Em Uso</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
-                <div class="stats-number">{{ estoque }}</div>
-                <div class="stats-label">Estoque</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
-                <div class="stats-number">{{ manutencao }}</div>
-                <div class="stats-label">Manutenção</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Busca e Filtros -->
-    <div class="search-box">
-        <form method="GET" action="">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input type="text" name="busca" class="form-control" placeholder="Buscar por nome ou serial..." value="{{ request.GET.busca }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <select name="categoria" class="form-select">
-                        <option value="">Todas as categorias</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:"s" %}selected{% endif %}>
-                                {{ categoria.nome }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <button type="submit" class="btn btn-custom-primary w-100">
-                        <i class="bi bi-search"></i> Buscar
-                    </button>
-                </div>
-            </div>
-        </form>
-        
-        <!-- Filtros Rápidos -->
-        <div class="filter-pills text-center">
-            <a href="?status=EM_USO" class="btn btn-sm btn-outline-success">Em Uso</a>
-            <a href="?status=ESTOQUE" class="btn btn-sm btn-outline-primary">Estoque</a>
-            <a href="?status=MANUTENCAO" class="btn btn-sm btn-outline-danger">Manutenção</a>
-            <a href="{% url 'lista_equipamentos' %}" class="btn btn-sm btn-outline-secondary">Limpar Filtros</a>
-        </div>
-    </div>
-
-    <!-- Lista de Equipamentos -->
-    {% if equipamentos %}
-    <div class="row">
-        {% for equipamento in equipamentos %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card equipment-card">
-                <div class="card-header-custom">
-                    <i class="bi bi-pc-display"></i> {{ equipamento.categoria.nome }}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ equipamento.nome }}</h5>
-                    <p class="card-text text-muted mb-2">
-                        <i class="bi bi-upc-scan"></i> <strong>Serial:</strong> {{ equipamento.serial }}
-                    </p>
-                    <p class="card-text text-muted mb-3">
-                        <i class="bi bi-calendar-check"></i> <strong>Data:</strong> {{ equipamento.data|date:"d/m/Y" }}
-                    </p>
-                    
-                    <div class="mb-3">
-                        {% if equipamento.status == 'EM_USO' %}
-                            <span class="status-badge status-em-uso">
-                                <i class="bi bi-check-circle"></i> Em Uso
-                            </span>
-                        {% elif equipamento.status == 'ESTOQUE' %}
-                            <span class="status-badge status-estoque">
-                                <i class="bi bi-box"></i> Estoque
-                            </span>
-                        {% elif equipamento.status == 'MANUTENCAO' %}
-                            <span class="status-badge status-manutencao">
-                                <i class="bi bi-tools"></i> Manutenção
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'editar_equipamento' equipamento.id %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i> Editar
-                        </a>
-                        <a href="{% url 'excluir_equipamento' equipamento.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir?')">
-                            <i class="bi bi-trash"></i> Excluir
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Paginação -->
-    {% if is_paginated %}
-    <nav aria-label="Navegação de página">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1">Primeira</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-                </li>
-            {% endif %}
-
-            <li class="page-item active">
-                <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-            </li>
-
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
-
-    {% else %}
-    <!-- Estado Vazio -->
-    <div class="empty-state">
-        <i class="bi bi-inbox"></i>
-        <h3 class="text-muted">Nenhum equipamento encontrado</h3>
-        <p class="text-muted">Comece adicionando seu primeiro equipamento ao inventário.</p>
-        <a href="{% url 'adicionar_equipamento' %}" class="btn btn-custom-primary mt-3">
-            <i class="bi bi-plus-circle"></i> Adicionar Equipamento
-        </a>
+    <!-- Mensagens de Erro Gerais -->
+    {% if form.non_field_errors %}
+    <div class="error-message">
+        <strong><i class="bi bi-exclamation-triangle"></i> Erro:</strong>
+        {{ form.non_field_errors }}
     </div>
     {% endif %}
+
+    <!-- Formulário -->
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Nome do Equipamento -->
+        <div class="form-group">
+            <label for="{{ form.nome.id_for_label }}" class="form-label required-field">
+                <i class="bi bi-laptop"></i> {{ form.nome.label }}
+            </label>
+            {{ form.nome }}
+            {% if form.nome.errors %}
+                <div class="error-message mt-2">
+                    {{ form.nome.errors }}
+                </div>
+            {% endif %}
+            <small class="form-text">Digite o nome do equipamento (ex: Notebook Dell Inspiron)</small>
+        </div>
+
+        <!-- Número de Série -->
+        <div class="form-group">
+            <label for="{{ form.serial.id_for_label }}" class="form-label required-field">
+                <i class="bi bi-upc-scan"></i> {{ form.serial.label }}
+            </label>
+            {{ form.serial }}
+            {% if form.serial.errors %}
+                <div class="error-message mt-2">
+                    {{ form.serial.errors }}
+                </div>
+            {% endif %}
+            <small class="form-text">Número de série único do equipamento</small>
+        </div>
+
+        <!-- Data de Aquisição -->
+        <div class="form-group">
+            <label for="{{ form.data.id_for_label }}" class="form-label required-field">
+                <i class="bi bi-calendar-check"></i> {{ form.data.label }}
+            </label>
+            {{ form.data }}
+            {% if form.data.errors %}
+                <div class="error-message mt-2">
+                    {{ form.data.errors }}
+                </div>
+            {% endif %}
+            <small class="form-text">Data em que o equipamento foi adquirido</small>
+        </div>
+
+        <!-- Categoria -->
+        <div class="form-group">
+            <label for="{{ form.categoria.id_for_label }}" class="form-label required-field">
+                <i class="bi bi-tag"></i> {{ form.categoria.label }}
+            </label>
+            {{ form.categoria }}
+            {% if form.categoria.errors %}
+                <div class="error-message mt-2">
+                    {{ form.categoria.errors }}
+                </div>
+            {% endif %}
+            <small class="form-text">Selecione a categoria do equipamento</small>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+            <label class="form-label required-field">
+                <i class="bi bi-info-circle"></i> {{ form.status.label }}
+            </label>
+            <div class="status-options">
+                {% for radio in form.status %}
+                    <div class="status-option">
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}">
+                            {% if radio.choice_label == "Em uso" %}
+                                <i class="bi bi-check-circle"></i>
+                            {% elif radio.choice_label == "Estoque" %}
+                                <i class="bi bi-box"></i>
+                            {% elif radio.choice_label == "Manutenção" %}
+                                <i class="bi bi-tools"></i>
+                            {% endif %}
+                            {{ radio.choice_label }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if form.status.errors %}
+                <div class="error-message mt-2">
+                    {{ form.status.errors }}
+                </div>
+            {% endif %}
+            <small class="form-text">Selecione o status atual do equipamento</small>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="button-group">
+            <a href="{% url 'lista_equipamentos' %}" class="btn btn-cancel">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-submit">
+                <i class="bi bi-check-circle"></i> Salvar Equipamento
+            </button>
+        </div>
+    </form>
+
+    <!-- Nota de Campos Obrigatórios -->
+    <div class="mt-4 text-center">
+        <small class="text-muted">
+            <i class="bi bi-info-circle"></i> Campos marcados com <span class="text-danger">*</span> são obrigatórios
+        </small>
+    </div>
 </div>
 {% endblock %}

@@ -31,12 +31,12 @@ def lista_equipamentos(request):
     status = request.GET.get('status')
     if status:
         equipamentos = equipamentos.filter(status=status)
-    amentos.order_by('-data')
+    
+    # Ordenar por data (mais recentes primeiro)
+    equipamentos = equipamentos.order_by('-data')
     
     # Calcular estatísticas
-    total_equipamento
-    # Ordenar por data (mais recentes primeiro)
-    equipamentos = equips = Equipamento.objects.count()
+    total_equipamentos = Equipamento.objects.count()
     em_uso = Equipamento.objects.filter(status='EM_USO').count()
     estoque = Equipamento.objects.filter(status='ESTOQUE').count()
     manutencao = Equipamento.objects.filter(status='MANUTENCAO').count()
